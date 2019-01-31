@@ -3,7 +3,7 @@
  * This sets the max pods based on the instanceType created
  * ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI
  */
-export const maxPods = Object.freeze(
+export const MAX_PODS = Object.freeze(
   new Map([
     ['c4.large', 29],
     ['c4.xlarge', 58],
@@ -76,7 +76,7 @@ export const enum NodeType {
  *
  * TODO: Create dynamic mappign by searching SSM Store
  */
-export const nodeAmi = Object.freeze({
+export const EKS_AMI = Object.freeze({
   Normal: {
     ['us-east-1']: 'ami-0440e4f6b9713faf6',
     ['us-west-2']: 'ami-0a54c984b9f908c81',

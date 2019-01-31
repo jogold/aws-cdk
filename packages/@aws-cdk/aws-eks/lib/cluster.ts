@@ -2,91 +2,19 @@ import asg = require('@aws-cdk/aws-autoscaling');
 import ec2 = require('@aws-cdk/aws-ec2');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/cdk');
-import { cloudformation } from './eks.generated';
-import { maxPods, nodeAmi, NodeType } from './instance-data';
-
-/**
- * Reference properties used when a cluster is exported or imported
- * with the const a = ClusterRef.import | export methodes
- */
-export interface IClusterRefProps {
-  /**
-   * The physical name of the Cluster
-   */
-  clusterName: string;
-  /**
-   * The unique ARN assigned to the service by AWS
-   * in the form of arn:aws:eks:
-   */
-  clusterArn: string;
-  /**
-   * The API Server endpoint URL
-   */
-  clusterEndpoint: string;
-  /**
-   * Reeference the vpc placement for placing nodes into ASG subnets
-   */
-  vpcPlacement: ec2.VpcPlacementStrategy;
-  /**
-   * The security group ID used by the cluster for it's rules
-   */
-  securityGroupId: string;
-  /**
-   * The IConnectable interface implementation for updating
-   * security group rules
-   */
-  connections: ec2.Connections;
-}
-
-/**
- * A SecurityGroup Reference, object not created with this template.
- */
-export abstract class ClusterRef extends cdk.Construct implements ec2.IConnectable {
-  /**
-   * Import an existing cluster
-   *
-   * @param parent the construct parent, in most cases 'this'
-   * @param id the id or name to import as
-   * @param props the cluster properties to use for importing information
-   */
-  public static import(parent: cdk.Construct, id: string, props: IClusterRefProps): ClusterRef {
-    return new ImportedCluster(parent, id, props);
-  }
-
-  public abstract readonly clusterName: string;
-  public abstract readonly clusterArn: string;
-  public abstract readonly clusterEndpoint: string;
-  public abstract readonly vpcPlacement: ec2.VpcPlacementStrategy;
-  public abstract readonly securityGroupId: string;
-  public abstract readonly connections: ec2.Connections;
-
-  /**
-   * Export cluster references to use in other stacks
-   */
-  public export(): IClusterRefProps {
-    return {
-      clusterName: this.makeOutput('ClusterName', this.clusterName),
-      clusterArn: this.makeOutput('ClusterArn', this.clusterArn),
-      clusterEndpoint: this.makeOutput('ClusterEndpoint', this.clusterEndpoint),
-      vpcPlacement: this.vpcPlacement,
-      securityGroupId: this.securityGroupId,
-      connections: this.connections,
-    };
-  }
-
-  private makeOutput(name: string, value: any): string {
-    return new cdk.Output(this, name, { value }).makeImportValue().toString();
-  }
-}
+import { ClusterBase } from './cluster-base';
+import { CfnCluster } from './eks.generated';
+import { EKS_AMI, MAX_PODS, NodeType } from './instance-data';
 
 /**
  * Properties to instantiate the Cluster
  */
-export interface IClusterProps extends cdk.StackProps {
+export interface ClusterProps {
   /**
    * The VPC in which to create the Cluster
    */
-  vpc: ec2.VpcNetworkRef;
+  vpc: ec2.IVpcNetwork;
+
   /**
    * Where to place the cluster within the VPC
    * Which SubnetType this placement falls in
@@ -94,18 +22,25 @@ export interface IClusterProps extends cdk.StackProps {
    * subnets if available otherwise private subnets
    */
   vpcPlacement: ec2.VpcPlacementStrategy;
+
   /**
-   * This provides the physical cfn name of the Cluster.
-   * It is not recommended to use an explicit name.
+   * Role that provides permissions for the Kubernetes control plane to make calls to AWS API operations on your behalf.
    *
-   * @default If you don't specify a clusterName, AWS CloudFormation
-   * generates a unique physical ID and uses that ID for the name.
+   * @default A role is automatically created for you
+   */
+  role?: iam.IRole;
+
+  /**
+   * Name for the cluster.
+   *
+   * @default Automatically generated name
    */
   clusterName?: string;
+
   /**
-   * The Kubernetes version to run in the cluster only 1.10 support today
+   * The Kubernetes version to run in the cluster
    *
-   * @default If not supplied, will use Amazon default version (1.10.3)
+   * @default If not supplied, will use Amazon default version
    */
   version?: string;
 }
@@ -116,56 +51,46 @@ export interface IClusterProps extends cdk.StackProps {
  * This is a fully managed cluster of API Servers (control-plane)
  * The user is still required to create the worker nodes.
  */
-export class Cluster extends ClusterRef {
-  public readonly vpc: ec2.VpcNetworkRef;
+export class Cluster extends ClusterBase {
+  /**
+   * Import an existing cluster
+   *
+   * @param parent the construct parent, in most cases 'this'
+   * @param id the id or name to import as
+   * @param props the cluster properties to use for importing information
+   */
+  public static import(parent: cdk.Construct, id: string, props: ClusterImportProps): ICluster {
+    return new ImportedCluster(parent, id, props);
+  }
+
+  public readonly vpc: ec2.IVpcNetwork;
+
   /**
    * The Name of the created EKS Cluster
-   *
-   * @type {string}
-   * @memberof Cluster
    */
   public readonly clusterName: string;
+
   /**
    * The AWS generated ARN for the Cluster resource
    *
-   * @type {string}
-   * @memberof Cluster
+   * @example arn:aws:eks:us-west-2:666666666666:cluster/prod
    */
   public readonly clusterArn: string;
+
   /**
    * The endpoint URL for the Cluster
+   *
    * This is the URL inside the kubeconfig file to use with kubectl
    *
-   * @type {string}
-   * @memberof Cluster
+   * @example https://5E1D0CEXAMPLEA591B746AFC5AB30262.yl4.us-west-2.eks.amazonaws.com
    */
   public readonly clusterEndpoint: string;
-  public readonly clusterCA: string;
+
   /**
-   * The VPC Placement strategy for the given cluster
-   * PublicSubnets? PrivateSubnets?
-   *
-   * @type {ec2.VpcPlacementStrategy}
-   * @memberof Cluster
+   * The certificate-authority-data for your cluster.
    */
-  public readonly vpcPlacement: ec2.VpcPlacementStrategy;
-  /**
-   * The security group used by the cluster, currently only one supported
-   * Updating the cluster by adding resources causes a destruction and
-   * re-creation. This is a limitation of the EKS API itself.
-   *
-   * @type {ec2.SecurityGroup}
-   * @memberof Cluster
-   */
-  public readonly securityGroup: ec2.SecurityGroup;
-  /**
-   * The security group ID attached to the security group of the cluster
-   * Used within the IConnectable implementation
-   *
-   * @type {string}
-   * @memberof Cluster
-   */
-  public readonly securityGroupId: string;
+  public readonly clusterCertificateAuthorityData: string;
+
   /**
    * Manages connection rules (Security Group Rules) for the cluster
    *
@@ -174,7 +99,10 @@ export class Cluster extends ClusterRef {
    */
   public readonly connections: ec2.Connections;
 
-  private readonly cluster: cloudformation.ClusterResource;
+  /**
+   * IAM role assumed by the EKS Control Plane
+   */
+  public readonly role: iam.IRole;
 
   /**
    * Initiates an EKS Cluster with the supplied arguments
@@ -183,16 +111,20 @@ export class Cluster extends ClusterRef {
    * @param name the name of the Construct to create
    * @param props properties in the IClusterProps interface
    */
-  constructor(parent: cdk.Construct, name: string, props: IClusterProps) {
+  constructor(parent: cdk.Construct, name: string, props: ClusterProps) {
     super(parent, name);
 
     this.vpc = props.vpc;
-    this.vpcPlacement = props.vpcPlacement;
-    const subnets = this.vpc.subnets(this.vpcPlacement);
-    const subnetIds: string[] = [];
-    subnets.map(s => subnetIds.push(s.subnetId));
 
-    const role = this.addClusterRole();
+    const subnetIds: string[] = this.vpc.subnets(props.vpcPlacement).map(s => s.subnetId);
+
+    this.role = props.role || new iam.Role(this, 'ClusterRole', {
+      assumedBy: new iam.ServicePrincipal('eks.amazonaws.com'),
+      managedPolicyArns: [
+        new iam.AwsManagedPolicy('policy/AmazonEKSClusterPolicy', this).policyArn,
+        new iam.AwsManagedPolicy('policy/AmazonEKSServicePolicy', this).policyArn,
+      ],
+    });
 
     this.securityGroup = this.addSecurityGroup();
     this.securityGroupId = this.securityGroup.securityGroupId;
@@ -200,55 +132,19 @@ export class Cluster extends ClusterRef {
       securityGroups: [this.securityGroup],
     });
 
-    const clusterProps: cloudformation.ClusterResourceProps = {
+    const resource = new CfnCluster(this, 'Resource', {
       name: props.clusterName,
-      roleArn: role.roleArn,
+      roleArn: this.role.roleArn,
       version: props.version,
       resourcesVpcConfig: {
-        securityGroupIds: new Array(this.securityGroupId),
-        subnetIds,
-      },
-    };
-    this.cluster = this.createCluster(clusterProps);
-    this.clusterName = this.cluster.clusterName;
-    this.clusterArn = this.cluster.clusterArn;
-    this.clusterEndpoint = this.cluster.clusterEndpoint;
-    this.clusterCA = this.cluster.clusterCertificateAuthorityData;
-  }
 
-  private createCluster(props: cloudformation.ClusterResourceProps) {
-    const cluster = new cloudformation.ClusterResource(this, 'Cluster', props);
-
-    return cluster;
-  }
-
-  /**
-   * This is private because for now the EKS API is limited
-   * Once the security groups are assigned, one can modify the groups
-   * but any additional groups or removal of groups destroys and
-   * creates a brand new cluster
-   */
-  private addSecurityGroup() {
-    return new ec2.SecurityGroup(this, 'ClusterSecurityGroup', {
-      vpc: this.vpc,
-      description: 'Cluster API Server Security Group.',
-      tags: {
-        Name: 'Cluster SecurityGroup',
-        Description: 'The security group assigned to the cluster',
-      },
-    });
-  }
-
-  private addClusterRole() {
-    const role = new iam.Role(this, 'ClusterRole', {
-      assumedBy: new iam.ServicePrincipal('eks.amazonaws.com'),
-      managedPolicyArns: [
-        'arn:aws:iam::aws:policy/AmazonEKSClusterPolicy',
-        'arn:aws:iam::aws:policy/AmazonEKSServicePolicy',
-      ],
+      }
     });
 
-    return role;
+    this.clusterName = resource.clusterName;
+    this.clusterArn = resource.clusterArn;
+    this.clusterEndpoint = resource.clusterEndpoint;
+    this.clusterCertificateAuthorityData = resource.clusterCertificateAuthorityData;
   }
 }
 
@@ -366,7 +262,7 @@ export class Nodes extends cdk.Construct {
     const nodeProps: asg.AutoScalingGroupProps = {
       vpc: this.vpc,
       instanceType: type,
-      machineImage: new ec2.GenericLinuxImage(nodeAmi[nodeType]),
+      machineImage: new ec2.GenericLinuxImage(EKS_AMI[nodeType]),
       minSize: props.minNodes || 1,
       maxSize: props.maxNodes || 1,
       desiredCapacity: props.minNodes || 1,
@@ -413,7 +309,7 @@ export class Nodes extends cdk.Construct {
   }
 
   private addUserData(props: { nodes: asg.AutoScalingGroup; type: string }) {
-    const max = maxPods.get(props.type);
+    const max = MAX_PODS.get(props.type);
     props.nodes.addUserData(
       'set -o xtrace',
       `/etc/eks/bootstrap.sh ${this.clusterName} --use-max-pods ${max}`,
@@ -438,7 +334,7 @@ export class Nodes extends cdk.Construct {
  * Cross stack currently runs into an issue with references
  * to security groups that are in stacks not yet deployed
  */
-class ImportedCluster extends ClusterRef {
+class ImportedCluster extends ClusterBase {
   public readonly clusterName: string;
   public readonly clusterArn: string;
   public readonly clusterEndpoint: string;
