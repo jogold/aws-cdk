@@ -72,10 +72,5 @@ export interface Login {
    * Do not put passwords in your CDK code directly. Import it from a Stack
    * Parameter or the SSM Parameter Store instead.
    */
-  password: string;
+  password?: string;
 }
-
-/**
- * Type for database parameters
- */
-export type Parameters = {[key: string]: any};

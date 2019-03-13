@@ -1,11 +1,11 @@
 import cdk = require('@aws-cdk/cdk');
 import { IParameterGroup, ParameterGroup, ParameterGroupProps } from './parameter-group';
-import { CfnDBClusterParameterGroup } from './rds.generated';
+import { CfnDBParameterGroup } from './rds.generated';
 
 /**
- * A cluster parameter group.
+ * An instance parameter group.
  */
-export class ClusterParameterGroup extends ParameterGroup implements IParameterGroup {
+export class InstanceParameterGroup extends ParameterGroup implements IParameterGroup {
   /**
    * The parameter group name.
    */
@@ -14,12 +14,12 @@ export class ClusterParameterGroup extends ParameterGroup implements IParameterG
   constructor(scope: cdk.Construct, id: string, props: ParameterGroupProps) {
     super(scope, id, props);
 
-    const parameterGroup = new CfnDBClusterParameterGroup(this, 'Resource', {
+    const parameterGroup = new CfnDBParameterGroup(this, 'Resource', {
       description: this.description,
       family: props.family,
       parameters: new cdk.Token(() => this.parameters)
     });
 
-    this.parameterGroupName = parameterGroup.dbClusterParameterGroupName;
+    this.parameterGroupName = parameterGroup.dbParameterGroupName;
   }
 }

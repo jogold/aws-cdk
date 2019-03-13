@@ -1,9 +1,14 @@
 import ec2 = require('@aws-cdk/aws-ec2');
+import kms = require('@aws-cdk/aws-kms');
+import secretsmanager = require('@aws-cdk/aws-secretsmanager');
 import cdk = require('@aws-cdk/cdk');
-import { IClusterParameterGroup } from './cluster-parameter-group';
-import { DatabaseClusterImportProps, Endpoint, IDatabaseCluster } from './cluster-ref';
+import { DatabaseClusterImportProps, IDatabaseCluster } from './cluster-ref';
+import { DatabaseSecret } from './database-secret';
+import { Endpoint } from './endpoint';
+import { IParameterGroup } from './parameter-group';
 import { BackupProps, DatabaseClusterEngine, InstanceProps, Login } from './props';
 import { CfnDBCluster, CfnDBInstance, CfnDBSubnetGroup } from './rds.generated';
+import { RotationSingleUser, RotationSingleUserOptions } from './rotation-single-user';
 
 /**
  * Properties for a new database cluster
@@ -87,7 +92,14 @@ export interface DatabaseClusterProps {
    *
    * @default No parameter group
    */
-  parameterGroup?: IClusterParameterGroup;
+  parameterGroup?: IParameterGroup;
+
+  /**
+   * The KMS key to use to encrypt the secret for the master user password.
+   *
+   * @default default master key
+   */
+  secretKmsKey?: kms.IEncryptionKey;
 }
 
 /**
@@ -136,10 +148,27 @@ export class DatabaseCluster extends cdk.Construct implements IDatabaseCluster {
    */
   public readonly securityGroupId: string;
 
+  /**
+   * The database engine
+   */
+  public readonly engine: DatabaseClusterEngine;
+
+  /**
+   * The secret associated with this cluster
+   */
+  public readonly secret?: secretsmanager.ISecret;
+
+  private readonly vpc: ec2.IVpcNetwork;
+  private readonly vpcPlacement?: ec2.VpcPlacementStrategy;
+  private readonly availabilityDependencies = new cdk.ConcreteDependable();
+
   constructor(scope: cdk.Construct, id: string, props: DatabaseClusterProps) {
     super(scope, id);
 
-    const subnets = props.instanceProps.vpc.subnets(props.instanceProps.vpcPlacement);
+    this.vpc = props.instanceProps.vpc;
+    this.vpcPlacement = props.instanceProps.vpcPlacement;
+
+    const subnets = this.vpc.subnets(this.vpcPlacement);
 
     // Cannot test whether the subnets are in different AZs, but at least we can test the amount.
     if (subnets.length < 2) {
@@ -158,6 +187,17 @@ export class DatabaseCluster extends cdk.Construct implements IDatabaseCluster {
     });
     this.securityGroupId = securityGroup.securityGroupId;
 
+    if (!props.masterUser.password) {
+      const databaseSecret = new DatabaseSecret(this, 'Secret', {
+        username: props.masterUser.username,
+        secretKmsKey: props.secretKmsKey,
+      });
+
+      this.secret = databaseSecret.secret;
+    }
+
+    this.engine = props.engine;
+
     const cluster = new CfnDBCluster(this, 'Resource', {
       // Basic
       engine: props.engine,
@@ -167,8 +207,8 @@ export class DatabaseCluster extends cdk.Construct implements IDatabaseCluster {
       port: props.port,
       dbClusterParameterGroupName: props.parameterGroup && props.parameterGroup.parameterGroupName,
       // Admin
-      masterUsername: props.masterUser.username,
-      masterUserPassword: props.masterUser.password,
+      masterUsername: this.secret ? this.secret.jsonFieldValue('username') : props.masterUser.username,
+      masterUserPassword: this.secret ? this.secret.jsonFieldValue('password') : props.masterUser.password,
       backupRetentionPeriod: props.backup && props.backup.retentionDays,
       preferredBackupWindow: props.backup && props.backup.preferredWindow,
       preferredMaintenanceWindow: props.preferredMaintenanceWindow,
@@ -181,6 +221,8 @@ export class DatabaseCluster extends cdk.Construct implements IDatabaseCluster {
     this.clusterIdentifier = cluster.ref;
     this.clusterEndpoint = new Endpoint(cluster.dbClusterEndpointAddress, cluster.dbClusterEndpointPort);
     this.readerEndpoint = new Endpoint(cluster.dbClusterReadEndpointAddress, cluster.dbClusterEndpointPort);
+
+    this.availabilityDependencies.add(cluster);
 
     const instanceCount = props.instances != null ? props.instances : 2;
     if (instanceCount < 1) {
@@ -214,10 +256,35 @@ export class DatabaseCluster extends cdk.Construct implements IDatabaseCluster {
 
       this.instanceIdentifiers.push(instance.ref);
       this.instanceEndpoints.push(new Endpoint(instance.dbInstanceEndpointAddress, instance.dbInstanceEndpointPort));
+
+      this.availabilityDependencies.add(instance);
+    }
+
+    if (this.secret) {
+      const secretAttachement = new secretsmanager.CfnSecretTargetAttachment(this, 'SecretAttachement', {
+        secretId: this.secret.secretArn,
+        targetId: cluster.ref,
+        targetType: 'AWS::RDS::DBCluster'
+      });
+
+      this.availabilityDependencies.add(secretAttachement);
     }
 
     const defaultPortRange = new ec2.TcpPortFromAttribute(this.clusterEndpoint.port);
     this.connections = new ec2.Connections({ securityGroups: [securityGroup], defaultPortRange });
+  }
+
+  public get available(): cdk.IDependable {
+    return this.availabilityDependencies;
+  }
+
+  public addMasterPasswordRotation(id: string, options?: RotationSingleUserOptions): void {
+    new RotationSingleUser(this, id, {
+      cluster: this,
+      vpc: this.vpc,
+      vpcPlacement: this.vpcPlacement,
+      ...options
+    });
   }
 
   /**
@@ -288,6 +355,11 @@ class ImportedDatabaseCluster extends cdk.Construct implements IDatabaseCluster 
    * Security group identifier of this database
    */
   public readonly securityGroupId: string;
+
+  /**
+   * A dependable that can be depended upon to force cluster availability.
+   */
+  public readonly available: cdk.IDependable = new cdk.ConcreteDependable();
 
   constructor(scope: cdk.Construct, name: string, private readonly props: DatabaseClusterImportProps) {
     super(scope, name);

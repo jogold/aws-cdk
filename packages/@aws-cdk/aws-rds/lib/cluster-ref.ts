@@ -1,5 +1,6 @@
 import ec2 = require('@aws-cdk/aws-ec2');
 import cdk = require('@aws-cdk/cdk');
+import { Endpoint } from './endpoint';
 
 /**
  * Create a clustered database with a given number of instances.
@@ -34,6 +35,11 @@ export interface IDatabaseCluster extends cdk.IConstruct, ec2.IConnectable {
    * The security group for this database cluster
    */
   readonly securityGroupId: string;
+
+  /**
+   * A dependable that can be depended upon to force cluster availability.
+   */
+  readonly available: cdk.IDependable;
 
   /**
    * Export a Database Cluster for importing in another stack
@@ -80,32 +86,4 @@ export interface DatabaseClusterImportProps {
    * Endpoint addresses of individual instances
    */
   instanceEndpointAddresses: string[];
-}
-
-/**
- * Connection endpoint of a database cluster or instance
- *
- * Consists of a combination of hostname and port.
- */
-export class Endpoint {
-  /**
-   * The hostname of the endpoint
-   */
-  public readonly hostname: string;
-
-  /**
-   * The port of the endpoint
-   */
-  public readonly port: string;
-
-  /**
-   * The combination of "HOSTNAME:PORT" for this endpoint
-   */
-  public readonly socketAddress: string;
-
-  constructor(address: string, port: string) {
-    this.hostname = address;
-    this.port = port;
-    this.socketAddress = `${address}:${port}`;
-  }
 }
