@@ -1,11 +1,15 @@
 import archiver = require('archiver');
 import crypto = require('crypto');
-import fs = require('fs-extra');
 import glob = require('glob');
+import fs = require('graceful-fs');
 import path = require('path');
+import util = require('util');
+
+const statAsync = util.promisify(fs.stat);
+const readFileAsync = util.promisify(fs.readFile);
 
 export function zipDirectory(directory: string, outputFile: string): Promise<void> {
-  return new Promise((ok, fail) => {
+  return new Promise(async (ok, fail) => {
     // The below options are needed to support following symlinks when building zip files:
     // - nodir: This will prevent symlinks themselves from being copied into the zip.
     // - follow: This will follow symlinks and copy the files within.
@@ -24,12 +28,15 @@ export function zipDirectory(directory: string, outputFile: string): Promise<voi
     archive.on('error', fail);
     archive.pipe(output);
 
-    files.forEach(file => { // Append files serially to ensure file order
-      archive.append(fs.createReadStream(path.join(directory, file)), {
+    await Promise.all(files.map(async (file) => {
+      const fullPath = path.join(directory, file);
+      const [data, stat] = await Promise.all([readFileAsync(fullPath), statAsync(fullPath)]);
+      archive.append(data, {
         name: file,
         date: new Date('1980-01-01T00:00:00.000Z'), // reset dates to get the same hash for the same content
+        mode: stat.mode
       });
-    });
+    }));
 
     archive.finalize();
 
