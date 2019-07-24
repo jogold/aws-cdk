@@ -28,15 +28,19 @@ export function zipDirectory(directory: string, outputFile: string): Promise<voi
     archive.on('error', fail);
     archive.pipe(output);
 
-    await Promise.all(files.map(async (file) => {
+    const contents = await Promise.all(files.map(async (file) => {
       const fullPath = path.join(directory, file);
       const [data, stat] = await Promise.all([readFileAsync(fullPath), statAsync(fullPath)]);
-      archive.append(data, {
-        name: file,
-        date: new Date('1980-01-01T00:00:00.000Z'), // reset dates to get the same hash for the same content
-        mode: stat.mode
-      });
+      return { file, data, stat };
     }));
+
+    contents.forEach(content => {
+      archive.append(content.data, {
+        name: content.file,
+        date: new Date('1980-01-01T00:00:00.000Z'), // reset dates to get the same hash for the same content
+        mode: content.stat.mode
+      });
+    });
 
     archive.finalize();
 
