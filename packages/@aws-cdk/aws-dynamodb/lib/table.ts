@@ -198,6 +198,8 @@ export class Table extends Resource {
     });
  }
 
+ private static lastCreatedWithIndex: { [key: string]: CfnTable } = {};
+
  /**
   * @attribute
   */
@@ -526,6 +528,21 @@ export class Table extends Resource {
     }
 
     return errors;
+  }
+
+  /**
+   * Amazon DynamoDB limits the number of tables with secondary indexes that
+   * are in the creating state. When creating multiple tables with indexes at the
+   * same time, DynamoDB returns an error and the stack operation fails.
+   */
+  protected prepare() {
+    const hasIndex = this.localSecondaryIndexes.length !== 0 || this.globalSecondaryIndexes.length !== 0;
+    if (hasIndex) {
+      if (Table.lastCreatedWithIndex[this.stack.stackId]) {
+        this.table.addDependsOn(Table.lastCreatedWithIndex[this.stack.stackId]);
+      }
+      Table.lastCreatedWithIndex[this.stack.stackId] = this.table;
+    }
   }
 
   /**

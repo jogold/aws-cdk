@@ -1279,6 +1279,306 @@ export = {
       test.done();
     }
   },
+
+  'dependencies when creating multiple tables with index'(test: Test) {
+    // GIVEN
+    const stack1 = new Stack();
+    const stack2 = new Stack();
+
+    // WHEN
+    new Table(stack1, 'TableWithoutIndex1', {
+      partitionKey: TABLE_PARTITION_KEY,
+    });
+
+    const tableIndex1 = new Table(stack1, 'TableIndex1', {
+      partitionKey: TABLE_PARTITION_KEY
+    });
+    tableIndex1.addGlobalSecondaryIndex({
+      indexName: GSI_NAME,
+      partitionKey: GSI_PARTITION_KEY
+    });
+
+    const tableIndex2 = new Table(stack1, 'TableIndex2', {
+      partitionKey: TABLE_PARTITION_KEY,
+      sortKey: TABLE_SORT_KEY,
+    });
+    tableIndex2.addLocalSecondaryIndex({
+      indexName: GSI_NAME,
+      sortKey: GSI_SORT_KEY
+    });
+
+    new Table(stack1, 'TableWithoutIndex2', {
+      partitionKey: TABLE_PARTITION_KEY,
+    });
+
+    const tableIndex3 = new Table(stack1, 'TableIndex3', {
+      partitionKey: TABLE_PARTITION_KEY
+    });
+    tableIndex3.addGlobalSecondaryIndex({
+      indexName: GSI_NAME,
+      partitionKey: GSI_PARTITION_KEY
+    });
+
+    const tableIndex4 = new Table(stack2, 'TableIndex4', {
+      partitionKey: TABLE_PARTITION_KEY
+    });
+    tableIndex4.addGlobalSecondaryIndex({
+      indexName: GSI_NAME,
+      partitionKey: GSI_PARTITION_KEY
+    });
+
+    // THEN
+    expect(stack1).toMatch({
+      "Resources": {
+        "TableWithoutIndex1E3372041": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        },
+        "TableIndex15380A809": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsiHashKey",
+                "AttributeType": "S"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "MyGSI",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsiHashKey",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                  "ReadCapacityUnits": 5,
+                  "WriteCapacityUnits": 5
+                }
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "DependsOn": [
+            "TableIndex2BCB2C079"
+          ],
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        },
+        "TableIndex2BCB2C079": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "sortKey",
+                "KeyType": "RANGE"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "sortKey",
+                "AttributeType": "N"
+              },
+              {
+                "AttributeName": "gsiSortKey",
+                "AttributeType": "B"
+              }
+            ],
+            "LocalSecondaryIndexes": [
+              {
+                "IndexName": "MyGSI",
+                "KeySchema": [
+                  {
+                    "AttributeName": "hashKey",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "gsiSortKey",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "DependsOn": [
+            "TableIndex3C58D0FB0"
+          ],
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        },
+        "TableWithoutIndex21EFF0B0B": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        },
+        "TableIndex3C58D0FB0": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsiHashKey",
+                "AttributeType": "S"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "MyGSI",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsiHashKey",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                  "ReadCapacityUnits": 5,
+                  "WriteCapacityUnits": 5
+                }
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        }
+      }
+    });
+
+    expect(stack2).toMatch({
+      "Resources": {
+        "TableIndex49CC8742D": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "KeySchema": [
+              {
+                "AttributeName": "hashKey",
+                "KeyType": "HASH"
+              }
+            ],
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "hashKey",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsiHashKey",
+                "AttributeType": "S"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "MyGSI",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsiHashKey",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                },
+                "ProvisionedThroughput": {
+                  "ReadCapacityUnits": 5,
+                  "WriteCapacityUnits": 5
+                }
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
+            }
+          },
+          "UpdateReplacePolicy": "Retain",
+          "DeletionPolicy": "Retain"
+        }
+      }
+    });
+    test.done();
+  },
 };
 
 function testGrant(test: Test, expectedActions: string[], invocation: (user: iam.IPrincipal, table: Table) => void) {
