@@ -1,6 +1,9 @@
+/* tslint:disable no-console */
 import * as s3 from '@aws-cdk/aws-s3';
 import * as s3_assets from '@aws-cdk/aws-s3-assets';
 import * as cdk from '@aws-cdk/core';
+import { spawnSync } from 'child_process';
+import * as nodePath from 'path';
 
 export abstract class Code {
   /**
@@ -41,6 +44,15 @@ export abstract class Code {
    */
   public static fromAsset(path: string, options?: s3_assets.AssetOptions): AssetCode {
     return new AssetCode(path, options);
+  }
+
+  /**
+   * Loads the function code from an entry file that will be bundled with Parcel
+   * @param entryFile Path to an entry file
+   * @param options Parcel options
+   */
+  public static fromParcel(entryFile: string, options?: ParcelOptions): AssetCode {
+    return new ParcelCode(entryFile, options);
   }
 
   /**
@@ -310,5 +322,81 @@ export class CfnParametersCode extends Code {
     } else {
       throw new Error('Pass CfnParametersCode to a Lambda Function before accessing the objectKeyParam property');
     }
+  }
+}
+
+/**
+ * Parcel options
+ */
+export interface ParcelOptions {
+  /**
+   * The name of the exported Lambda handler
+   *
+   * @default handler
+   */
+  readonly handler?: string;
+
+  /**
+   * Minify files
+   *
+   * @default false
+   */
+  readonly minify?: boolean;
+
+  /**
+   * Include source maps
+   *
+   * @default false
+   */
+  readonly sourceMaps?: boolean;
+}
+
+/**
+ * Lambda code from an entry file that will be bundled with Parcel
+ */
+export class ParcelCode extends AssetCode {
+  constructor(entryFile: string, options: ParcelOptions = {}) {
+    if (!/\.(js|ts)$/.test(entryFile)) {
+      throw new Error('Parcel supports only JavaScript or TypeScript entry files.');
+    }
+
+    const outDir = nodePath.join(nodePath.dirname(nodePath.resolve(entryFile)), '.build');
+
+    const args = [
+      'build',
+      entryFile,
+      '-d',
+      outDir,
+      '--global',
+      options.handler || 'handler',
+      '--target',
+      'node',
+      '--bundle-node-modules',
+      '--log-level',
+      '2'
+    ];
+
+    if (!options.minify) {
+      args.push('--no-minify');
+    }
+
+    if (!options.sourceMaps) {
+      args.push('--no-source-maps');
+    }
+
+    console.error('Bundling with Parcel...');
+    const parcel = spawnSync('parcel', args);
+
+    if (parcel.error) {
+      throw parcel.error;
+    }
+
+    if (parcel.status !== 0) {
+      throw new Error(parcel.stderr.toString().trim());
+    }
+
+    console.error(parcel.stdout.toString().trim());
+
+    super(outDir);
   }
 }
