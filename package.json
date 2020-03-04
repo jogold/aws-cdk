@@ -51,8 +51,6 @@
       "@aws-cdk/aws-codepipeline-actions/case/**",
       "@aws-cdk/aws-ecr-assets/minimatch",
       "@aws-cdk/aws-ecr-assets/minimatch/**",
-      "@aws-cdk/aws-lambda-nodejs/parcel-bundler",
-      "@aws-cdk/aws-lambda-nodejs/parcel-bundler/**",
       "@aws-cdk/cx-api/semver",
       "@aws-cdk/cx-api/semver/**",
       "@aws-cdk/cx-api/semver/**"

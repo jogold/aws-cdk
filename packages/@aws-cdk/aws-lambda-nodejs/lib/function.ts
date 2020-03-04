@@ -3,30 +3,14 @@ import * as cdk from '@aws-cdk/core';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { collectIdentifiersUnder, createSourceFile, getImportStatements } from './ast';
 import { Builder } from './builder';
-import { nodeMajorVersion, parseStackTrace } from './util';
+import { countItems, nodeMajorVersion, parseStackTrace } from './util';
 
 /**
- * Properties for a NodejsFunction
+ * Options for a NodejsFunction
  */
-export interface NodejsFunctionProps extends lambda.FunctionOptions {
-  /**
-   * Path to the entry file (JavaScript or TypeScript).
-   *
-   * @default - Derived from the name of the defining file and the construct's id.
-   * If the `NodejsFunction` is defined in `stack.ts` with `my-handler` as id
-   * (`new NodejsFunction(this, 'my-handler')`), the construct will look at `stack.my-handler.ts`
-   * and `stack.my-handler.js`.
-   */
-  readonly entry?: string;
-
-  /**
-   * The name of the exported handler in the entry file.
-   *
-   * @default handler
-   */
-  readonly handler?: string;
-
+export interface NodejsFunctionOptions extends lambda.FunctionOptions {
   /**
    * The runtime environment. Only runtimes of the Node.js family are
    * supported.
@@ -65,6 +49,50 @@ export interface NodejsFunctionProps extends lambda.FunctionOptions {
    * @default - `.cache` in the root directory
    */
   readonly cacheDir?: string;
+
+  /**
+   * A list of modules that should be considered as externals
+   *
+   * @default ['aws-sdk']
+   */
+  readonly externals?: string[];
+
+  /**
+   * A list of modules that should not be bundled but included in the
+   * `node_modules` folder.
+   *
+   * @default - all modules are bundled
+   */
+  readonly includes?: string[]
+
+  /**
+   * Whether to install the modules in a docker environment
+   *
+   * @default false
+   */
+  readonly installInDocker?: boolean;
+}
+
+/**
+ * Properties for a NodejsFunction
+ */
+export interface NodejsFunctionProps extends NodejsFunctionOptions {
+  /**
+   * Path to the entry file (JavaScript or TypeScript).
+   *
+   * @default - Derived from the name of the defining file and the construct's id.
+   * If the `NodejsFunction` is defined in `stack.ts` with `my-handler` as id
+   * (`new NodejsFunction(this, 'my-handler')`), the construct will look at `stack.my-handler.ts`
+   * and `stack.my-handler.js`.
+   */
+  readonly entry?: string;
+
+  /**
+   * The name of the exported handler in the entry file.
+   *
+   * @default handler
+   */
+  readonly handler?: string;
 }
 
 /**
@@ -94,6 +122,9 @@ export class NodejsFunction extends lambda.Function {
       sourceMaps: props.sourceMaps,
       cacheDir: props.cacheDir,
       nodeVersion: extractVersion(runtime),
+      externals: props.externals ? Array.from(new Set(props.externals)) : ['aws-sdk'],
+      includes: Array.from(new Set(props.includes)),
+      installInDocker: props.installInDocker,
     });
     builder.build();
 
@@ -103,6 +134,74 @@ export class NodejsFunction extends lambda.Function {
       code: lambda.Code.fromAsset(handlerDir),
       handler: `index.${handler}`,
     });
+  }
+}
+
+/**
+ * Properties for a NodejsCodeFunction
+ */
+export interface NodejsCodeFunctionProps extends NodejsFunctionOptions {
+  /**
+   * The handler's code.
+   *
+   * Must be declared as an anonymous function.
+   *
+   * @example
+   * async (event) => {
+   *   console.log(event);
+   *   // do something with the event...
+   *   return 'done';
+   * };
+   *
+   * If the handler is imported from another file, use:
+   * `async (event) => myImportedHandler(event);`
+   */
+  readonly handler: any;
+}
+
+/**
+ * Node.js code function
+ */
+export class NodejsCodeFunction extends NodejsFunction {
+  constructor(scope: cdk.Construct, id: string, props: NodejsCodeFunctionProps) {
+    // Find defining file
+    const definingFile = findDefiningFile('NodejsCodeFunction');
+    const definingSourceFile = createSourceFile(definingFile);
+
+    // Temporary file that will be used as entry
+    const tmpFile = definingFile.replace(/.(js|ts)$/, '.tmp.$1');
+
+    // Extract top level import/require statements from defining file
+    const importStatements = getImportStatements(definingSourceFile);
+
+    // Write import/require statements and handler's code to temporary file
+    fs.writeFileSync(tmpFile, createHandlerCode(importStatements.map(s => s.text), props.handler));
+
+    // Collect identifiers present in temporary files
+    const tmpSourceFile = createSourceFile(tmpFile);
+    const identifiers = collectIdentifiersUnder(tmpSourceFile);
+    const identifiersCount = countItems(identifiers);
+
+    // Filter out unused statement
+    const usedImportStatements = importStatements.filter(statement => {
+      for (const identifier of statement.identifiers) {
+        if (identifiersCount[identifier] > 1 ) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    // Write a clean entry file that can be processed by the bundler
+    fs.writeFileSync(tmpFile, createHandlerCode(usedImportStatements.map(s => s.text), props.handler));
+
+    super(scope, id, {
+      ...props,
+      entry: tmpFile,
+      handler: 'handler',
+    });
+
+    fs.unlinkSync(tmpFile);
   }
 }
 
@@ -142,9 +241,9 @@ function findEntry(id: string, entry?: string): string {
 /**
  * Finds the name of the file where the `NodejsFunction` is defined
  */
-function findDefiningFile(): string {
+function findDefiningFile(name: string = 'NodejsFunction'): string {
   const stackTrace = parseStackTrace();
-  const functionIndex = stackTrace.findIndex(s => /NodejsFunction/.test(s.methodName || ''));
+  const functionIndex = stackTrace.findIndex(s => new RegExp(name).test(s.methodName || ''));
 
   if (functionIndex === -1 || !stackTrace[functionIndex + 1]) {
     throw new Error('Cannot find defining file.');
@@ -164,4 +263,11 @@ function extractVersion(runtime: lambda.Runtime): string | undefined {
   }
 
   return match[1];
+}
+
+function createHandlerCode(imports: string[], handler: () => (event: any) => Promise<any>): string {
+  return `
+    ${imports.join('\n')}
+    exports.handler=${handler};
+  `;
 }

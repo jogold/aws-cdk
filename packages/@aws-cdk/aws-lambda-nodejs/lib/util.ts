@@ -52,7 +52,7 @@ export function nodeMajorVersion(): number {
 /**
  * Finds closest package.json path
  */
-export function findPkgPath(): string | undefined {
+export function findPkgPath(): string {
   let pkgPath;
 
   for (const path of module.paths) {
@@ -62,23 +62,25 @@ export function findPkgPath(): string | undefined {
     }
   }
 
+  if (!pkgPath) {
+    throw new Error('Cannot find a `package.json` file.');
+  }
+
   return pkgPath;
 }
 
 /**
- * Updates the package.json and returns the original
+ * Counts items in a list
  */
-export function updatePkg(pkgPath: string, data: any): Buffer {
-  const original = fs.readFileSync(pkgPath);
+export function countItems(list: string[]): { [item: string]: number } {
+  const ret: { [identifier: string]: number } = {};
+  for (const item of list) {
+    if (ret[item]) {
+      ret[item] += 1;
+    } else {
+      ret[item] = 1;
+    }
+  }
 
-  const pkgJson = JSON.parse(original.toString());
-
-  const updated = {
-    ...pkgJson,
-    ...data,
-  };
-
-  fs.writeFileSync(pkgPath, JSON.stringify(updated, null, 2));
-
-  return original;
+  return ret;
 }
