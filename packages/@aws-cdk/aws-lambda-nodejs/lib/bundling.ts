@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
+import { Installer } from './installer';
 import { PackageJsonManager } from './package-json-manager';
 import { findUp } from './util';
 
@@ -164,9 +165,16 @@ export class Bundling {
         : [],
     ].join(' ');
 
+    // Additional volumes to mount
+    let volumes: cdk.DockerVolume[] = [];
+    if (options.cacheDir) {
+      volumes.push({ containerPath: '/parcel-cache', hostPath: options.cacheDir });
+    }
+
     let installer = Installer.NPM;
     let lockfile: string | undefined;
     let depsCommand = '';
+    let containerCachePath: string | undefined;
 
     if (dependencies) {
       // Create a dummy package.json for dependencies that we need to install
@@ -176,18 +184,24 @@ export class Bundling {
       );
 
       // Use npm unless we have a yarn.lock.
-      if (fs.existsSync(path.join(projectRoot, LockFile.YARN))) {
+      if (fs.existsSync(path.join(projectRoot, Installer.YARN.options.lockFile))) {
         installer = Installer.YARN;
-        lockfile = LockFile.YARN;
-      } else if (fs.existsSync(path.join(projectRoot, LockFile.NPM))) {
-        lockfile = LockFile.NPM;
+        lockfile = Installer.YARN.options.lockFile;
+      } else if (fs.existsSync(path.join(projectRoot, Installer.NPM.options.lockFile))) {
+        lockfile = Installer.NPM.options.lockFile;
+      }
+
+      // Mount installer host cache path
+      if (installer.cachePath) {
+        containerCachePath = '/installer-cache';
+        volumes.push({ containerPath: containerCachePath, hostPath: installer.cachePath });
       }
 
       // Move dummy package.json and lock file then install
       depsCommand = chain([
         `mv ${cdk.AssetStaging.BUNDLING_INPUT_DIR}/.package.json ${cdk.AssetStaging.BUNDLING_OUTPUT_DIR}/package.json`,
         lockfile ? `cp ${cdk.AssetStaging.BUNDLING_INPUT_DIR}/${lockfile} ${cdk.AssetStaging.BUNDLING_OUTPUT_DIR}/${lockfile}` : '',
-        `cd ${cdk.AssetStaging.BUNDLING_OUTPUT_DIR} && ${installer} install`,
+        `cd ${cdk.AssetStaging.BUNDLING_OUTPUT_DIR} && ${installer.command} install`,
       ]);
     }
 
@@ -196,24 +210,18 @@ export class Bundling {
       bundling: {
         image,
         command: ['bash', '-c', chain([parcelCommand, depsCommand])],
-        environment: options.parcelEnvironment,
-        volumes: options.cacheDir
-          ? [{ containerPath: '/parcel-cache', hostPath: options.cacheDir }]
-          : [],
+        environment: {
+          ...options.parcelEnvironment,
+          ...containerCachePath // Use installer container cache path
+            ? { [installer.options.cacheEnv]: containerCachePath }
+            : {},
+          ...installer.options.configEnv ?? {}, // Installer specific env vars
+        },
+        volumes,
         workingDirectory: path.dirname(containerEntryPath).replace(/\\/g, '/'), // Always use POSIX paths in the container
       },
     });
   }
-}
-
-enum Installer {
-  NPM = 'npm',
-  YARN = 'yarn',
-}
-
-enum LockFile {
-  NPM = 'package-lock.json',
-  YARN = 'yarn.lock'
 }
 
 function runtimeVersion(runtime: lambda.Runtime): string {

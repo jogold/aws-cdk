@@ -39,9 +39,9 @@ test('Parcel bundling', () => {
   expect(Code.fromAsset).toHaveBeenCalledWith('/project', {
     assetHashType: AssetHashType.BUNDLE,
     bundling: expect.objectContaining({
-      environment: {
+      environment: expect.objectContaining({
         KEY: 'value',
-      },
+      }),
       volumes: [{ containerPath: '/parcel-cache', hostPath: '/cache-dir' }],
       workingDirectory: '/asset-input/folder',
       command: [
@@ -109,6 +109,12 @@ test('Parcel bundling with externals and dependencies', () => {
         'bash', '-c',
         '$(node -p "require.resolve(\'parcel\')") build /asset-input/folder/entry.ts --target cdk-lambda --no-autoinstall --no-scope-hoist && mv /asset-input/.package.json /asset-output/package.json && cd /asset-output && npm install',
       ],
+      volumes: expect.arrayContaining([
+        expect.objectContaining({ containerPath: '/installer-cache' }),
+      ]),
+      environment: expect.objectContaining({
+        npm_config_cache: '/installer-cache',
+      }),
     }),
   });
 
