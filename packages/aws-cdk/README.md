@@ -239,7 +239,8 @@ $ cdk destroy --app='node bin/main.js' MyStackName
 #### `cdk bootstrap`
 Deploys a `CDKToolkit` CloudFormation stack into the specified environment(s), that provides an S3 bucket that
 `cdk deploy` will use to store synthesized templates and the related assets, before triggering a CloudFormation stack
-update. The name of the deployed stack can be configured using the `--toolkit-stack-name` argument.
+update. The name of the deployed stack can be configured using the `--toolkit-stack-name` argument. The S3 Bucket
+Public Access Block Configuration can be configured using the `--public-access-block-configuration` argument.
 
 ```console
 $ # Deploys to all environments
@@ -248,6 +249,9 @@ $ cdk bootstrap --app='node bin/main.js'
 $ # Deploys only to environments foo and bar
 $ cdk bootstrap --app='node bin/main.js' foo bar
 ```
+
+By default, bootstrap stack will be protected from stack termination. This can be disabled using 
+`--termination-protection` argument.
 
 #### `cdk doctor`
 Inspect the current command-line environment and configurations, and collect information that can be useful for
@@ -279,6 +283,6 @@ Some of the interesting keys that can be used in the JSON configuration files:
     },
     "toolkitStackName": "foo",        // Customize 'bootstrap' stack name  (--toolkit-stack-name=foo)
     "toolkitBucketName": "fooBucket", // Customize 'bootstrap' bucket name (--toolkit-bucket-name=fooBucket)
-    "versionReporting": false         // Opt-out of version reporting      (--no-version-reporting)
+    "versionReporting": false,         // Opt-out of version reporting      (--no-version-reporting)
 }
 ```

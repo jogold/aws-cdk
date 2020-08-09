@@ -5,8 +5,8 @@ import * as sns from '@aws-cdk/aws-sns';
 import * as cdk from '@aws-cdk/core';
 import * as s3n from '../lib';
 
-// tslint:disable:object-literal-key-quotes
-// tslint:disable:max-line-length
+/* eslint-disable max-len */
+/* eslint-disable quote-props */
 
 test('bucket without notifications', () => {
   const stack = new cdk.Stack();
@@ -289,8 +289,6 @@ test('a notification destination can specify a set of dependencies that must be 
   };
 
   bucket.addObjectCreatedNotification(dest);
-
-  cdk.ConstructNode.prepare(stack.node);
 
   expect(SynthUtils.synthesize(stack).template.Resources.BucketNotifications8F2E257D).toEqual({
     Type: 'Custom::S3BucketNotifications',

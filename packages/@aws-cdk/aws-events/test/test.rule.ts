@@ -5,7 +5,7 @@ import { Test } from 'nodeunit';
 import { EventBus, EventField, IRule, IRuleTarget, RuleTargetConfig, RuleTargetInput, Schedule } from '../lib';
 import { Rule } from '../lib/rule';
 
-// tslint:disable:object-literal-key-quotes
+/* eslint-disable quote-props */
 
 export = {
   'default rule'(test: Test) {
@@ -574,42 +574,6 @@ export = {
       test.throws(() => {
         rule.addTarget(new SomeTarget('T', resource));
       }, /You need to provide a concrete region for the target stack when using cross-account events/);
-
-      test.done();
-    },
-
-    'requires that the source stack be part of an App'(test: Test) {
-      const app = new cdk.App();
-
-      const sourceAccount = '123456789012';
-      const sourceStack = new cdk.Stack(undefined, 'SourceStack', { env: { account: sourceAccount, region: 'us-west-2' } });
-      const rule = new Rule(sourceStack, 'Rule');
-
-      const targetAccount = '234567890123';
-      const targetStack = new cdk.Stack(app, 'TargetStack', { env: { account: targetAccount, region: 'us-west-2' } });
-      const resource = new cdk.Construct(targetStack, 'Resource');
-
-      test.throws(() => {
-        rule.addTarget(new SomeTarget('T', resource));
-      }, /Event stack which uses cross-account targets must be part of a CDK app/);
-
-      test.done();
-    },
-
-    'requires that the target stack be part of an App'(test: Test) {
-      const app = new cdk.App();
-
-      const sourceAccount = '123456789012';
-      const sourceStack = new cdk.Stack(app, 'SourceStack', { env: { account: sourceAccount, region: 'us-west-2' } });
-      const rule = new Rule(sourceStack, 'Rule');
-
-      const targetAccount = '234567890123';
-      const targetStack = new cdk.Stack(undefined, 'TargetStack', { env: { account: targetAccount, region: 'us-west-2' } });
-      const resource = new cdk.Construct(targetStack, 'Resource');
-
-      test.throws(() => {
-        rule.addTarget(new SomeTarget('T', resource));
-      }, /Target stack which uses cross-account event targets must be part of a CDK app/);
 
       test.done();
     },

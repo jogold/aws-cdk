@@ -41,6 +41,7 @@ describe('Bootstrapping v2', () => {
     expect(mockDeployStack).toHaveBeenCalledWith(expect.objectContaining({
       parameters: {
         FileAssetsBucketName: 'my-bucket-name',
+        PublicAccessBlockConfiguration: 'true',
       },
     }));
   });
@@ -55,6 +56,21 @@ describe('Bootstrapping v2', () => {
     expect(mockDeployStack).toHaveBeenCalledWith(expect.objectContaining({
       parameters: {
         FileAssetsBucketKmsKeyId: 'my-kms-key-id',
+        PublicAccessBlockConfiguration: 'true',
+      },
+    }));
+  });
+
+  test('passes false to PublicAccessBlockConfiguration', async () => {
+    await bootstrapEnvironment2(env, sdk, {
+      parameters: {
+        publicAccessBlockConfiguration: false,
+      },
+    });
+
+    expect(mockDeployStack).toHaveBeenCalledWith(expect.objectContaining({
+      parameters: {
+        PublicAccessBlockConfiguration: 'false',
       },
     }));
   });
@@ -98,6 +114,30 @@ describe('Bootstrapping v2', () => {
       // and could also be used by templates which are deployed through pipelines.
       { 'Fn::Sub': 'CdkBootstrap-${Qualifier}-Version' },
     ]);
+  });
+
+  test('stack is not termination protected by default', async () => {
+    await bootstrapEnvironment2(env, sdk);
+
+    expect(mockDeployStack).toHaveBeenCalledWith(expect.objectContaining({
+      stack: expect.objectContaining({
+        terminationProtection: false,
+      }),
+    }));
+  });
+
+  test('stack is termination protected when option is set', async () => {
+    await bootstrapEnvironment2(env, sdk, {
+      parameters: {
+        terminationProtection: true,
+      },
+    });
+
+    expect(mockDeployStack).toHaveBeenCalledWith(expect.objectContaining({
+      stack: expect.objectContaining({
+        terminationProtection: true,
+      }),
+    }));
   });
 
   afterEach(() => {

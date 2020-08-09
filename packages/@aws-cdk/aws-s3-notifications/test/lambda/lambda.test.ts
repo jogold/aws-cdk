@@ -1,4 +1,5 @@
 // import { SynthUtils } from '@aws-cdk/assert';
+import { ResourcePart } from '@aws-cdk/assert';
 import '@aws-cdk/assert/jest';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3 from '@aws-cdk/aws-s3';
@@ -69,4 +70,51 @@ test('lambda as notification target specified by function arn', () => {
       ],
     },
   });
+});
+
+test('permissions are added as a dependency to the notifications resource when using singleton function', () => {
+
+  const stack = new Stack();
+  const bucket = new s3.Bucket(stack, 'MyBucket');
+  const fn = new lambda.SingletonFunction(stack, 'MyFunction', {
+    uuid: 'uuid',
+    runtime: lambda.Runtime.NODEJS_10_X,
+    handler: 'index.handler',
+    code: lambda.Code.fromInline('foo'),
+  });
+
+  const lambdaDestination = new s3n.LambdaDestination(fn);
+
+  bucket.addEventNotification(s3.EventType.OBJECT_CREATED, lambdaDestination, { prefix: 'v1/' });
+
+  expect(stack).toHaveResource('Custom::S3BucketNotifications', {
+    DependsOn: [ 'SingletonLambdauuidAllowBucketNotificationsFromMyBucket1464DCBA' ],
+  }, ResourcePart.CompleteDefinition);
+});
+
+test('add multiple event notifications using a singleton function', () => {
+
+  const stack = new Stack();
+  const bucket = new s3.Bucket(stack, 'MyBucket');
+  const fn = new lambda.SingletonFunction(stack, 'MyFunction', {
+    uuid: 'uuid',
+    runtime: lambda.Runtime.NODEJS_10_X,
+    handler: 'index.handler',
+    code: lambda.Code.fromInline('foo'),
+  });
+
+  const lambdaDestination = new s3n.LambdaDestination(fn);
+
+  bucket.addEventNotification(s3.EventType.OBJECT_CREATED, lambdaDestination, { prefix: 'v1/'});
+  bucket.addEventNotification(s3.EventType.OBJECT_CREATED, lambdaDestination, { prefix: 'v2/'});
+
+  expect(stack).toHaveResourceLike('Custom::S3BucketNotifications', {
+    NotificationConfiguration: {
+      LambdaFunctionConfigurations: [
+        { Filter: { Key: { FilterRules: [{ Name: 'prefix', Value: 'v1/'}]}}},
+        { Filter: { Key: { FilterRules: [{ Name: 'prefix', Value: 'v2/'}]}}},
+      ],
+    },
+  });
+
 });

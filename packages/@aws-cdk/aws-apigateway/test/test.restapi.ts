@@ -4,7 +4,7 @@ import { App, CfnElement, CfnResource, Stack } from '@aws-cdk/core';
 import { Test } from 'nodeunit';
 import * as apigw from '../lib';
 
-// tslint:disable:max-line-length
+/* eslint-disable max-len */
 
 export = {
   'minimal setup'(test: Test) {
@@ -956,7 +956,7 @@ export = {
     test.done();
   },
 
-  'Import': {
+  Import: {
     'fromRestApiId()'(test: Test) {
       // GIVEN
       const stack = new Stack();
@@ -995,7 +995,7 @@ export = {
     },
   },
 
-  'SpecRestApi': {
+  SpecRestApi: {
     'add Methods and Resources'(test: Test) {
       // GIVEN
       const stack = new Stack();
@@ -1015,6 +1015,30 @@ export = {
       expect(stack).to(haveResource('AWS::ApiGateway::Method', {
         HttpMethod: 'GET',
         ResourceId: stack.resolve(resource.resourceId),
+      }));
+      test.done();
+    },
+
+    '"endpointTypes" can be used to specify endpoint configuration for SpecRestApi'(test: Test) {
+      // GIVEN
+      const stack = new Stack();
+
+      // WHEN
+      const api = new apigw.SpecRestApi(stack, 'api', {
+        apiDefinition: apigw.ApiDefinition.fromInline({ foo: 'bar' }),
+        endpointTypes: [ apigw.EndpointType.EDGE, apigw.EndpointType.PRIVATE ],
+      });
+
+      api.root.addMethod('GET');
+
+      // THEN
+      expect(stack).to(haveResource('AWS::ApiGateway::RestApi', {
+        EndpointConfiguration: {
+          Types: [
+            'EDGE',
+            'PRIVATE',
+          ],
+        },
       }));
       test.done();
     },

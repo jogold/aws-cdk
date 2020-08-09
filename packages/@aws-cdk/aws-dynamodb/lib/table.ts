@@ -890,7 +890,7 @@ export class Table extends TableBase {
       }
       this.billingMode = BillingMode.PAY_PER_REQUEST;
     } else if (props.stream) {
-      streamSpecification = { streamViewType : props.stream };
+      streamSpecification = { streamViewType: props.stream };
     }
 
     this.table = new CfnTable(this, 'Resource', {
@@ -913,14 +913,14 @@ export class Table extends TableBase {
 
     this.encryptionKey = encryptionKey;
 
-    if (props.tableName) { this.node.addMetadata('aws:cdk:hasPhysicalName', props.tableName); }
-
     this.tableArn = this.getResourceArnAttribute(this.table.attrArn, {
       service: 'dynamodb',
       resource: 'table',
       resourceName: this.physicalName,
     });
     this.tableName = this.getResourceNameAttribute(this.table.ref);
+
+    if (props.tableName) { this.node.addMetadata('aws:cdk:hasPhysicalName', this.tableName); }
 
     this.tableStreamArn = streamSpecification ? this.table.attrStreamArn : undefined;
 

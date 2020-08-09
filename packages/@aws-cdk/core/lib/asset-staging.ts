@@ -1,12 +1,15 @@
-import * as cxapi from '@aws-cdk/cx-api';
 import * as crypto from 'crypto';
-import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as cxapi from '@aws-cdk/cx-api';
+import * as fs from 'fs-extra';
 import { AssetHashType, AssetOptions } from './assets';
 import { BundlingOptions } from './bundling';
-import { Construct, ISynthesisSession } from './construct-compat';
 import { FileSystem, FingerprintOptions } from './fs';
+import { Stage } from './stage';
+import { Construct } from './construct-compat';
+
+const STAGING_TMP = '.cdk.staging';
 
 /**
  * Initialization properties for `AssetStaging`.
@@ -101,15 +104,22 @@ export class AssetStaging extends Construct {
     }
 
     this.sourceHash = this.assetHash;
+
+    const outdir = Stage.of(this)?.outdir;
+    if (!outdir) {
+      throw new Error('unable to determine cloud assembly output directory. Assets must be defined indirectly within a "Stage" or an "App" scope');
+    }
+
+    this.stageAsset(outdir);
   }
 
-  protected synthesize(session: ISynthesisSession) {
+  private stageAsset(outdir: string) {
     // Staging is disabled
     if (!this.relativePath) {
       return;
     }
 
-    const targetPath = path.join(session.assembly.outdir, this.relativePath);
+    const targetPath = path.join(outdir, this.relativePath);
 
     // Already staged
     if (fs.existsSync(targetPath)) {
@@ -118,22 +128,9 @@ export class AssetStaging extends Construct {
 
     // Asset has been bundled
     if (this.bundleDir) {
-      // Try to rename bundling directory to staging directory
-      try {
-        fs.renameSync(this.bundleDir, targetPath);
-        return;
-      } catch (err) {
-        // /tmp and cdk.out could be mounted across different mount points
-        // in this case we will fallback to copying. This can happen in Windows
-        // Subsystem for Linux (WSL).
-        if (err.code === 'EXDEV') {
-          fs.mkdirSync(targetPath);
-          FileSystem.copyDirectory(this.bundleDir, targetPath, this.fingerprintOptions);
-          return;
-        }
-
-        throw err;
-      }
+      // Move bundling directory to staging directory
+      fs.moveSync(this.bundleDir, targetPath);
+      return;
     }
 
     // Copy file/directory to staging directory
@@ -149,8 +146,14 @@ export class AssetStaging extends Construct {
   }
 
   private bundle(options: BundlingOptions): string {
-    // Create temporary directory for bundling
-    const bundleDir = FileSystem.mkdtemp('cdk-asset-bundle-');
+    // Temp staging directory in the working directory
+    const stagingTmp = path.join('.', STAGING_TMP);
+    fs.ensureDirSync(stagingTmp);
+
+    // Create temp directory for bundling inside the temp staging directory
+    const bundleDir = path.resolve(fs.mkdtempSync(path.join(stagingTmp, 'asset-bundle-')));
+    // Chmod the bundleDir to full access.
+    fs.chmodSync(bundleDir, 0o777);
 
     let user: string;
     if (options.user) {
@@ -176,6 +179,7 @@ export class AssetStaging extends Construct {
     ];
 
     try {
+      process.stderr.write(`Bundling asset ${this.node.path}...\n`);
       options.image._run({
         command: options.command,
         user,
