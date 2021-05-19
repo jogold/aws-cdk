@@ -875,35 +875,9 @@
                       },
                       ":s3:::",
                       {
-                        "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3Bucket4E939944"
+                        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "/",
-                      {
-                        "Fn::Select": [
-                          0,
-                          {
-                            "Fn::Split": [
-                              "||",
-                              {
-                                "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3VersionKeyF30A2E72"
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "Fn::Select": [
-                          1,
-                          {
-                            "Fn::Split": [
-                              "||",
-                              {
-                                "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3VersionKeyF30A2E72"
-                              }
-                            ]
-                          }
-                        ]
-                      }
+                      "/2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61.conf"
                     ]
                   ]
                 }
@@ -1030,35 +1004,9 @@
                     },
                     ":s3:::",
                     {
-                      "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3Bucket4E939944"
+                      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                     },
-                    "/",
-                    {
-                      "Fn::Select": [
-                        0,
-                        {
-                          "Fn::Split": [
-                            "||",
-                            {
-                              "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3VersionKeyF30A2E72"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "Fn::Select": [
-                        1,
-                        {
-                          "Fn::Split": [
-                            "||",
-                            {
-                              "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3VersionKeyF30A2E72"
-                            }
-                          ]
-                        }
-                      ]
-                    }
+                    "/2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61.conf"
                   ]
                 ]
               }
@@ -1076,7 +1024,7 @@
                     },
                     ":s3:::",
                     {
-                      "Ref": "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3Bucket4E939944"
+                      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                     }
                   ]
                 ]
@@ -1167,18 +1115,6 @@
     "SsmParameterValueawsserviceecsoptimizedamiamazonlinux2recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter": {
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
       "Default": "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
-    },
-    "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3Bucket4E939944": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61\""
-    },
-    "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61S3VersionKeyF30A2E72": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61\""
-    },
-    "AssetParameters2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61ArtifactHashB4EEDAF3": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"2ca891b3a73a4a36630bba20580e3390a104d2ac9ff1f22a6bcadf575f8a5a61\""
     },
     "SsmParameterValueawsserviceawsforfluentbit210C96584B6F00A464EAD1953AFF4B05118Parameter": {
       "Type": "AWS::SSM::Parameter::Value<String>",

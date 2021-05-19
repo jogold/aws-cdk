@@ -18,35 +18,9 @@
                 },
                 "/",
                 {
-                  "Ref": "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883S3Bucket88569758"
+                  "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                 },
-                "/",
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883S3VersionKey2661E5B6"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883S3VersionKey2661E5B6"
-                        }
-                      ]
-                    }
-                  ]
-                }
+                "/89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883.json"
               ]
             ]
           }
@@ -66,20 +40,6 @@
         "Export": {
           "Name": "nested-stacks-refs2-parent-with-producer:ExportsOutputFnGetAttNested1NestedStackNested1NestedStackResourceCD0AD36BOutputsnestedstacksrefs2parentwithproducerNested1MyTopic9E26C363TopicNameF4BCEDAF"
         }
-      }
-    },
-    "Parameters": {
-      "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883S3Bucket88569758": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883\""
-      },
-      "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883S3VersionKey2661E5B6": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883\""
-      },
-      "AssetParameters89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883ArtifactHashF75589EB": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"89ace718d1ec985253be4d688a4632c5f15e28247cedbf99a756c83096315883\""
       }
     }
   },

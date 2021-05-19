@@ -45,7 +45,10 @@
                     {
                       "Ref": "AWS::AccountId"
                     },
-                    ":repository/aws-cdk/assets"
+                    ":repository/",
+                    {
+                      "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}"
+                    }
                   ]
                 ]
               }
@@ -132,23 +135,7 @@
         "Environment": {
           "ComputeType": "BUILD_GENERAL1_SMALL",
           "Image": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Ref": "AWS::AccountId"
-                },
-                ".dkr.ecr.",
-                {
-                  "Ref": "AWS::Region"
-                },
-                ".",
-                {
-                  "Ref": "AWS::URLSuffix"
-                },
-                "/aws-cdk/assets:2564b8c8e3f9e82a6394872a4e555c4d0c06ab6f47b9aca360c22c9ed622487c"
-              ]
-            ]
+            "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:2564b8c8e3f9e82a6394872a4e555c4d0c06ab6f47b9aca360c22c9ed622487c"
           },
           "ImagePullCredentialsType": "SERVICE_ROLE",
           "PrivilegedMode": false,

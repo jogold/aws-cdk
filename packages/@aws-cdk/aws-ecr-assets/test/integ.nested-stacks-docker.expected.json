@@ -17,55 +17,15 @@
               },
               "/",
               {
-                "Ref": "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bS3BucketFB15A731"
+                "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
               },
-              "/",
-              {
-                "Fn::Select": [
-                  0,
-                  {
-                    "Fn::Split": [
-                      "||",
-                      {
-                        "Ref": "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bS3VersionKeyF38F9C9A"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "Fn::Select": [
-                  1,
-                  {
-                    "Fn::Split": [
-                      "||",
-                      {
-                        "Ref": "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bS3VersionKeyF38F9C9A"
-                      }
-                    ]
-                  }
-                ]
-              }
+              "/dd4d20ba9cfb8a2ebf511bdc9e1adfee2420a1ea038efba3f84f7e0d0787edcd.json"
             ]
           ]
         }
       },
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
-    }
-  },
-  "Parameters": {
-    "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bS3BucketFB15A731": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593b\""
-    },
-    "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bS3VersionKeyF38F9C9A": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593b\""
-    },
-    "AssetParameters41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593bArtifactHashEC633CC8": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"41589ef1a760129e41441e85e58fe02db5f019ed532b8a4a20729f3245b0593b\""
     }
   }
 }

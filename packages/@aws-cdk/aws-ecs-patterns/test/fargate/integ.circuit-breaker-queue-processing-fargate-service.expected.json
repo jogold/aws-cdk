@@ -446,23 +446,7 @@
             ],
             "Essential": true,
             "Image": {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Ref": "AWS::AccountId"
-                  },
-                  ".dkr.ecr.",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  ".",
-                  {
-                    "Ref": "AWS::URLSuffix"
-                  },
-                  "/aws-cdk/assets:3a8ba3ad06ed212b075efa3157fb407649c5996812bc64eeb5209e220aab4be5"
-                ]
-              ]
+              "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:3a8ba3ad06ed212b075efa3157fb407649c5996812bc64eeb5209e220aab4be5"
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
@@ -550,7 +534,10 @@
                     {
                       "Ref": "AWS::AccountId"
                     },
-                    ":repository/aws-cdk/assets"
+                    ":repository/",
+                    {
+                      "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}"
+                    }
                   ]
                 ]
               }
@@ -590,7 +577,7 @@
         "Cluster": {
           "Ref": "EcsDefaultClusterMnL3mNNYNVPC9C1EC7A3"
         },
-       "DeploymentConfiguration": {
+        "DeploymentConfiguration": {
           "DeploymentCircuitBreaker": {
             "Enable": true,
             "Rollback": true

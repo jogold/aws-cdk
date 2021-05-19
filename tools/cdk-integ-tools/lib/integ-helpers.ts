@@ -1,7 +1,7 @@
 // Helper functions for integration tests
 import { spawnSync } from 'child_process';
 import * as path from 'path';
-import { AVAILABILITY_ZONE_FALLBACK_CONTEXT_KEY, FUTURE_FLAGS } from '@aws-cdk/cx-api';
+import { AVAILABILITY_ZONE_FALLBACK_CONTEXT_KEY, FUTURE_FLAGS, NEW_STYLE_STACK_SYNTHESIS_CONTEXT } from '@aws-cdk/cx-api';
 import * as fs from 'fs-extra';
 
 const CDK_OUTDIR = 'cdk-integ.out';
@@ -337,12 +337,15 @@ export const DEFAULT_SYNTH_OPTIONS = {
         },
       ],
     },
+    // New style stack synthesis
+    [NEW_STYLE_STACK_SYNTHESIS_CONTEXT]: 'true',
     // Enable feature flags for all integ tests
     ...FUTURE_FLAGS,
   },
   env: {
     CDK_INTEG_ACCOUNT: '12345678',
     CDK_INTEG_REGION: 'test-region',
+    CDK_DISABLE_BOOTSTRAP_RULE: '1', // No need to "pollute" the template
   },
 };
 

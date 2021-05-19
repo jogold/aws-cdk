@@ -160,41 +160,9 @@
         "Properties": {
           "Code": {
             "S3Bucket": {
-              "Ref": "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aS3Bucket66843878"
+              "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
             },
-            "S3Key": {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Fn::Select": [
-                      0,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aS3VersionKey14680708"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "Fn::Select": [
-                      1,
-                      {
-                        "Fn::Split": [
-                          "||",
-                          {
-                            "Ref": "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aS3VersionKey14680708"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              ]
-            }
+            "S3Key": "94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3a.zip"
           },
           "Role": {
             "Fn::GetAtt": [
@@ -202,7 +170,6 @@
               "Arn"
             ]
           },
-          "Runtime": "nodejs14.x",
           "Description": "Lambda to make DynamoDB a global table",
           "Handler": "index.handler",
           "Runtime": "nodejs14.x",
@@ -232,20 +199,6 @@
         },
         "UpdateReplacePolicy": "Delete",
         "DeletionPolicy": "Delete"
-      }
-    },
-    "Parameters": {
-      "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aS3Bucket66843878": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3a\""
-      },
-      "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aS3VersionKey14680708": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3a\""
-      },
-      "AssetParameters94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3aArtifactHash5687D31D": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"94575de3fd18404e41e94a6c1d4b7a1eec2985fd23d2c11999d095e09667ba3a\""
       }
     }
   },

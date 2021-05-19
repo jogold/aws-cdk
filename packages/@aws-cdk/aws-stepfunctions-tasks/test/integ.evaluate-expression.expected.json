@@ -36,41 +36,9 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bS3Bucket743A2950"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bS3VersionKey2DBCB833"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bS3VersionKey2DBCB833"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "bc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626b.zip"
         },
         "Role": {
           "Fn::GetAtt": [
@@ -182,20 +150,6 @@
         "StateMachineRoleDefaultPolicyDF1E6607",
         "StateMachineRoleB840431D"
       ]
-    }
-  },
-  "Parameters": {
-    "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bS3Bucket743A2950": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"bc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626b\""
-    },
-    "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bS3VersionKey2DBCB833": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"bc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626b\""
-    },
-    "AssetParametersbc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626bArtifactHashAD6C554B": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"bc320c7bd6a0eba90db647aa586cf65548560a54c141153fdc12f22eb3b2626b\""
     }
   },
   "Outputs": {

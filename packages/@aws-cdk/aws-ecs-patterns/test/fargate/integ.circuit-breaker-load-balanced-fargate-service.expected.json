@@ -684,17 +684,17 @@
     },
     "myServiceServiceURL1258C56B": {
       "Value": {
-        "Fn::Join":[
-            "",
-            [
-              "http://",
-              {
-                "Fn::GetAtt": [
-                  "myServiceLB168895E1",
-                  "DNSName"
-                ]
-              }
-            ]
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "myServiceLB168895E1",
+                "DNSName"
+              ]
+            }
+          ]
         ]
       }
     }

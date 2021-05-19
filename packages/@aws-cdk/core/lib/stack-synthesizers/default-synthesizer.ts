@@ -374,7 +374,7 @@ export class DefaultStackSynthesizer extends StackSynthesizer {
     //
     // If it's done AFTER _synthesizeTemplate(), then the template won't contain the
     // right constructs.
-    if (this.props.generateBootstrapVersionRule ?? true) {
+    if (!process.env.CDK_DISABLE_BOOTSTRAP_RULE && (this.props.generateBootstrapVersionRule ?? true)) {
       addBootstrapVersionRule(this.stack, MIN_BOOTSTRAP_STACK_VERSION, this.qualifier);
     }
 

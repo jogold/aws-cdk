@@ -36,68 +36,22 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232S3Bucket1354C645"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232S3VersionKey5D873FAC"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232S3VersionKey5D873FAC"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232.zip"
         },
-        "Handler": "index.main",
         "Role": {
           "Fn::GetAtt": [
             "MyLambdaServiceRole4539ECB6",
             "Arn"
           ]
         },
+        "Handler": "index.main",
         "Runtime": "python3.6"
       },
       "DependsOn": [
         "MyLambdaServiceRole4539ECB6"
       ]
-    }
-  },
-  "Parameters": {
-    "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232S3Bucket1354C645": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232\""
-    },
-    "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232S3VersionKey5D873FAC": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232\""
-    },
-    "AssetParameters9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232ArtifactHashFA16AACF": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"9678c34eca93259d11f2d714177347afd66c50116e1e08996eff893d3ca81232\""
     }
   }
 }

@@ -420,13 +420,13 @@
         "Code": {
           "ZipFile": "def main(event, context): pass"
         },
-        "Handler": "index.main",
         "Role": {
           "Fn::GetAtt": [
             "MyLambdaServiceRole4539ECB6",
             "Arn"
           ]
         },
+        "Handler": "index.main",
         "Runtime": "python3.6",
         "VpcConfig": {
           "SecurityGroupIds": [

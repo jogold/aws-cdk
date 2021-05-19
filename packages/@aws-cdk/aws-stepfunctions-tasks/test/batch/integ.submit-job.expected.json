@@ -755,12 +755,6 @@
     "ComputeEnv2C40ACC2": {
       "Type": "AWS::Batch::ComputeEnvironment",
       "Properties": {
-        "ServiceRole": {
-          "Fn::GetAtt": [
-            "ComputeEnvResourceServiceInstanceRoleCF89E9E1",
-            "Arn"
-          ]
-        },
         "Type": "MANAGED",
         "ComputeResources": {
           "AllocationStrategy": "BEST_FIT",
@@ -795,6 +789,12 @@
             }
           ],
           "Type": "EC2"
+        },
+        "ServiceRole": {
+          "Fn::GetAtt": [
+            "ComputeEnvResourceServiceInstanceRoleCF89E9E1",
+            "Arn"
+          ]
         },
         "State": "ENABLED"
       },
@@ -855,23 +855,7 @@
         "Type": "container",
         "ContainerProperties": {
           "Image": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Ref": "AWS::AccountId"
-                },
-                ".dkr.ecr.",
-                {
-                  "Ref": "AWS::Region"
-                },
-                ".",
-                {
-                  "Ref": "AWS::URLSuffix"
-                },
-                "/aws-cdk/assets:10112d0d2c68a9d76297acc4623b1af0d5e9fd11b2226eee455e09c6fcf1b776"
-              ]
-            ]
+            "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:10112d0d2c68a9d76297acc4623b1af0d5e9fd11b2226eee455e09c6fcf1b776"
           },
           "Memory": 4,
           "Privileged": false,

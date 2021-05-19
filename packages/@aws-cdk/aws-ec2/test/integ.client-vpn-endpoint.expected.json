@@ -83,41 +83,9 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957S3Bucket60FDAA05"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957S3VersionKeyF2886582"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957S3VersionKeyF2886582"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "bb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957.zip"
         },
         "Timeout": 900,
         "MemorySize": 128,
@@ -593,20 +561,6 @@
       },
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
-    }
-  },
-  "Parameters": {
-    "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957S3Bucket60FDAA05": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"bb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957\""
-    },
-    "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957S3VersionKeyF2886582": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"bb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957\""
-    },
-    "AssetParametersbb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957ArtifactHashF17C10B6": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"bb3ce11d35aa60dce674523850f7a4a038127a6c48af335699cff4cc55cb0957\""
     }
   }
 }

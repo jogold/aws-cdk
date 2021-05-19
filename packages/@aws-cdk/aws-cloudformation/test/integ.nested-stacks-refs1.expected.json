@@ -38,55 +38,15 @@
                 },
                 "/",
                 {
-                  "Ref": "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46S3BucketE30948C8"
+                  "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                 },
-                "/",
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46S3VersionKeyDEA9E5AE"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46S3VersionKeyDEA9E5AE"
-                        }
-                      ]
-                    }
-                  ]
-                }
+                "/f780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46.json"
               ]
             ]
           }
         },
         "UpdateReplacePolicy": "Delete",
         "DeletionPolicy": "Delete"
-      }
-    },
-    "Parameters": {
-      "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46S3BucketE30948C8": {
-        "Type": "String",
-        "Description": "S3 bucket for asset \"f780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46\""
-      },
-      "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46S3VersionKeyDEA9E5AE": {
-        "Type": "String",
-        "Description": "S3 key for asset version \"f780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46\""
-      },
-      "AssetParametersf780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46ArtifactHashFCB5E601": {
-        "Type": "String",
-        "Description": "Artifact hash for asset \"f780d24543a81dc89296e718fbad166c6cc0223026f7a142a0ad9cb21de3ac46\""
       }
     }
   }

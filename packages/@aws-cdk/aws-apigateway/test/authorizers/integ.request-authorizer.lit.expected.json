@@ -36,49 +36,17 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0S3BucketD7637C1B"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0S3VersionKeyC19FD924"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0S3VersionKeyC19FD924"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0.zip"
         },
-        "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
             "MyAuthorizerFunctionServiceRole8A34C19E",
             "Arn"
           ]
         },
+        "Handler": "index.handler",
         "Runtime": "nodejs10.x"
       },
       "DependsOn": [
@@ -269,20 +237,6 @@
         "IdentitySource": "method.request.header.Authorization,method.request.querystring.allow",
         "Name": "RequestAuthorizerIntegMyAuthorizer5D9D41C5"
       }
-    }
-  },
-  "Parameters": {
-    "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0S3BucketD7637C1B": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0\""
-    },
-    "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0S3VersionKeyC19FD924": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0\""
-    },
-    "AssetParameters3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0ArtifactHash9DF43F02": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"3dc8c5549b88fef617feef923524902b3650973ae1159c9489ee8405344dd5a0\""
     }
   },
   "Outputs": {

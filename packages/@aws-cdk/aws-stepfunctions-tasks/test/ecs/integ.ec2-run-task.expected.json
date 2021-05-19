@@ -494,16 +494,7 @@
           {
             "Essential": true,
             "Image": {
-              "Fn::Join": [
-                "",
-                [
-                  "12345678.dkr.ecr.test-region.",
-                  {
-                    "Ref": "AWS::URLSuffix"
-                  },
-                  "/aws-cdk/assets:709fd91ba301f9b460ce1066dbc339f6a29bd4a07609ff98fb0e0faa475b650d"
-                ]
-              ]
+              "Fn::Sub": "12345678.dkr.ecr.test-region.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-12345678-test-region:709fd91ba301f9b460ce1066dbc339f6a29bd4a07609ff98fb0e0faa475b650d"
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
@@ -580,7 +571,7 @@
                     {
                       "Ref": "AWS::Partition"
                     },
-                    ":ecr:test-region:12345678:repository/aws-cdk/assets"
+                    ":ecr:test-region:12345678:repository/cdk-hnb659fds-container-assets-12345678-test-region"
                   ]
                 ]
               }

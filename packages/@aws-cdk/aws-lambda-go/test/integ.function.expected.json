@@ -36,41 +36,9 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1S3Bucket62A8237E"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1S3VersionKey1C4F3B50"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1S3VersionKey1C4F3B50"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1.zip"
         },
         "Role": {
           "Fn::GetAtt": [
@@ -84,20 +52,6 @@
       "DependsOn": [
         "gohandlerdockerServiceRole70394790"
       ]
-    }
-  },
-  "Parameters": {
-    "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1S3Bucket62A8237E": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1\""
-    },
-    "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1S3VersionKey1C4F3B50": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1\""
-    },
-    "AssetParameters4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1ArtifactHashBE683488": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"4702fc8f2fac1855e6700e59222ef0ebbeaf11eba75c66af9f2e216e312b16b1\""
     }
   }
 }

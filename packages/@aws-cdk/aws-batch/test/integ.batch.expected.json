@@ -566,13 +566,13 @@
     "batchunmanagedcomputeenvED550298": {
       "Type": "AWS::Batch::ComputeEnvironment",
       "Properties": {
+        "Type": "UNMANAGED",
         "ServiceRole": {
           "Fn::GetAtt": [
             "batchunmanagedcomputeenvResourceServiceInstanceRoleCA40AF77",
             "Arn"
           ]
         },
-        "Type": "UNMANAGED",
         "State": "ENABLED"
       }
     },
@@ -817,12 +817,6 @@
     "batchdemandcomputeenvlaunchtemplateF8A5B233": {
       "Type": "AWS::Batch::ComputeEnvironment",
       "Properties": {
-        "ServiceRole": {
-          "Fn::GetAtt": [
-            "batchdemandcomputeenvlaunchtemplateResourceServiceInstanceRole76AD99CC",
-            "Arn"
-          ]
-        },
         "Type": "MANAGED",
         "ComputeResources": {
           "AllocationStrategy": "BEST_FIT",
@@ -863,6 +857,12 @@
             "compute-env-tag": "123XYZ"
           },
           "Type": "EC2"
+        },
+        "ServiceRole": {
+          "Fn::GetAtt": [
+            "batchdemandcomputeenvlaunchtemplateResourceServiceInstanceRole76AD99CC",
+            "Arn"
+          ]
         },
         "State": "ENABLED"
       },
@@ -1143,12 +1143,6 @@
     "batchspotcomputeenv2CE4DFD9": {
       "Type": "AWS::Batch::ComputeEnvironment",
       "Properties": {
-        "ServiceRole": {
-          "Fn::GetAtt": [
-            "batchspotcomputeenvResourceServiceInstanceRole8B0DF5A7",
-            "Arn"
-          ]
-        },
         "Type": "MANAGED",
         "ComputeResources": {
           "AllocationStrategy": "SPOT_CAPACITY_OPTIMIZED",
@@ -1200,6 +1194,12 @@
             }
           ],
           "Type": "SPOT"
+        },
+        "ServiceRole": {
+          "Fn::GetAtt": [
+            "batchspotcomputeenvResourceServiceInstanceRole8B0DF5A7",
+            "Arn"
+          ]
         },
         "State": "ENABLED"
       },

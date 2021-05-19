@@ -109,41 +109,9 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaS3BucketACF45CC2"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaS3VersionKeyBCA0A3F3"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaS3VersionKeyBCA0A3F3"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "5c61041c12314e1ad8e67a0107fa3733382a206a78cdc1576fffa7e93caca5b4.zip"
         },
         "Role": {
           "Fn::GetAtt": [
@@ -271,20 +239,6 @@
       ],
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
-    }
-  },
-  "Parameters": {
-    "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaS3BucketACF45CC2": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"bd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edba\""
-    },
-    "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaS3VersionKeyBCA0A3F3": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"bd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edba\""
-    },
-    "AssetParametersbd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edbaArtifactHashF3AE56EF": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"bd060cb930079c194320bc9a045d159066215c3a4858c45bdb12a79ef9a1edba\""
     }
   },
   "Outputs": {

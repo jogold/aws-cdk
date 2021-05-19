@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Exercise all integ stacks and if they deploy, update the expected synth files
+import { NEW_STYLE_STACK_SYNTHESIS_CONTEXT } from '@aws-cdk/cx-api';
 import * as yargs from 'yargs';
 import { DEFAULT_SYNTH_OPTIONS, IntegrationTests } from '../lib/integ-helpers';
 
@@ -44,7 +45,9 @@ async function main() {
         console.error(`Deploying ${test.name}...`);
         await test.invokeCli([...args, 'deploy', '--require-approval', 'never', ...stackToDeploy], {
           verbose: argv.verbose,
-          // Note: no "context" and "env", so use default user settings!
+          context: {
+            [NEW_STYLE_STACK_SYNTHESIS_CONTEXT]: 'true',
+          },
         });
         console.error('Deployment succeeded, updating snapshot.');
       }

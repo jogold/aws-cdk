@@ -134,41 +134,9 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94S3BucketEBC7D1F4"
+            "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
           },
-          "S3Key": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Fn::Select": [
-                    0,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94S3VersionKeyDC9DCE00"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "Fn::Select": [
-                    1,
-                    {
-                      "Fn::Split": [
-                        "||",
-                        {
-                          "Ref": "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94S3VersionKeyDC9DCE00"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          }
+          "S3Key": "6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94.zip"
         },
         "Role": {
           "Fn::GetAtt": [
@@ -235,20 +203,6 @@
           ]
         }
       }
-    }
-  },
-  "Parameters": {
-    "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94S3BucketEBC7D1F4": {
-      "Type": "String",
-      "Description": "S3 bucket for asset \"6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94\""
-    },
-    "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94S3VersionKeyDC9DCE00": {
-      "Type": "String",
-      "Description": "S3 key for asset version \"6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94\""
-    },
-    "AssetParameters6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94ArtifactHash34B6F705": {
-      "Type": "String",
-      "Description": "Artifact hash for asset \"6e29dae9ab5b8a6c0aa8f922991cad784ebd048388ec6587d4832f307ef92f94\""
     }
   }
 }
